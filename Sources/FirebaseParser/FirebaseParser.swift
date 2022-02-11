@@ -1,6 +1,102 @@
-public struct FirebaseParser {
-    public private(set) var text = "Hello, World!"
+struct KeyValue<T: Codable>: Codable {
+    let key: String
+    let value: T
+}
 
-    public init() {
+//struct DynamicRootArray
+
+struct DynamicChildrenArray<T: Codable>: Codable {
+
+    private var array: [KeyValue<T>]
+    
+    private struct DynamicCodingKeys: CodingKey {
+
+        // Use for string-keyed dictionary
+        var stringValue: String
+        init?(stringValue: String) {
+            self.stringValue = stringValue
+        }
+
+        // Use for integer-keyed dictionary
+        var intValue: Int?
+        init?(intValue: Int) {
+            // We are not using this, thus just return nil
+            return nil
+        }
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: DynamicCodingKeys.self)
+
+        var tempArray = [KeyValue<T>]()
+
+        for key in container.allKeys {
+            let decodedValue = try container
+                .decode(T.self, forKey: DynamicCodingKeys(stringValue: key.stringValue)!)
+            
+            let nodeItem = KeyValue(key: key.stringValue,value: decodedValue)
+            tempArray.append(nodeItem)
+        }
+
+        array = tempArray
+    }
+}
+
+extension DynamicChildrenArray: Collection {
+    typealias ArrayType = [KeyValue<T>]
+    // Required nested types, that tell Swift what our collection contains
+    typealias Index = ArrayType.Index
+    typealias Element = ArrayType.Element
+
+    // The upper and lower bounds of the collection, used in iterations
+    var startIndex: Index { return array.startIndex }
+    var endIndex: Index { return array.endIndex }
+
+    // Required subscript, based on a dictionary index
+    subscript(index: Index) -> Iterator.Element {
+        array[index]
+    }
+    
+    public subscript(key: String) -> T? {
+        array.first { $0.key == key }?.value
+    }
+
+    // Method that returns the next index when iterating
+    func index(after i: Index) -> Index {
+        return array.index(after: i)
+    }
+}
+
+struct FirebaseDynamicRoot<T: Codable>: Codable {
+    private var array: DynamicChildrenArray<T>
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        array = try container.decode(DynamicChildrenArray<T>.self)
+    }
+}
+
+extension FirebaseDynamicRoot: Collection {
+    typealias ArrayType = DynamicChildrenArray<T>
+    // Required nested types, that tell Swift what our collection contains
+    typealias Index = ArrayType.Index
+    typealias Element = ArrayType.Element
+
+    // The upper and lower bounds of the collection, used in iterations
+    var startIndex: Index { return array.startIndex }
+    var endIndex: Index { return array.endIndex }
+
+    // Required subscript, based on a dictionary index
+    subscript(index: Index) -> Iterator.Element {
+        array[index]
+    }
+    
+    public subscript(key: String) -> T? {
+        array.first { $0.key == key }?.value
+    }
+
+    // Method that returns the next index when iterating
+    func index(after i: Index) -> Index {
+        return array.index(after: i)
     }
 }
