@@ -1,11 +1,9 @@
-struct KeyValue<T: Codable>: Codable {
-    let key: String
-    let value: T
+public struct KeyValue<T: Codable>: Codable {
+    public let key: String
+    public let value: T
 }
 
-//struct DynamicRootArray
-
-struct DynamicChildrenArray<T: Codable>: Codable {
+public struct DynamicChildrenArray<T: Codable>: Codable {
 
     private var array: [KeyValue<T>]
     
@@ -25,7 +23,7 @@ struct DynamicChildrenArray<T: Codable>: Codable {
         }
     }
 
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: DynamicCodingKeys.self)
 
         var tempArray = [KeyValue<T>]()
@@ -43,17 +41,17 @@ struct DynamicChildrenArray<T: Codable>: Codable {
 }
 
 extension DynamicChildrenArray: Collection {
-    typealias ArrayType = [KeyValue<T>]
+    public typealias ArrayType = [KeyValue<T>]
     // Required nested types, that tell Swift what our collection contains
-    typealias Index = ArrayType.Index
-    typealias Element = ArrayType.Element
+    public typealias Index = ArrayType.Index
+    public typealias Element = ArrayType.Element
 
     // The upper and lower bounds of the collection, used in iterations
-    var startIndex: Index { return array.startIndex }
-    var endIndex: Index { return array.endIndex }
+    public var startIndex: Index { return array.startIndex }
+    public var endIndex: Index { return array.endIndex }
 
     // Required subscript, based on a dictionary index
-    subscript(index: Index) -> Iterator.Element {
+    public subscript(index: Index) -> Iterator.Element {
         array[index]
     }
     
@@ -62,32 +60,32 @@ extension DynamicChildrenArray: Collection {
     }
 
     // Method that returns the next index when iterating
-    func index(after i: Index) -> Index {
+    public func index(after i: Index) -> Index {
         return array.index(after: i)
     }
 }
 
-struct FirebaseDynamicRoot<T: Codable>: Codable {
+public struct FirebaseDynamicRoot<T: Codable>: Codable {
     private var array: DynamicChildrenArray<T>
     
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         array = try container.decode(DynamicChildrenArray<T>.self)
     }
 }
 
 extension FirebaseDynamicRoot: Collection {
-    typealias ArrayType = DynamicChildrenArray<T>
+    public typealias ArrayType = DynamicChildrenArray<T>
     // Required nested types, that tell Swift what our collection contains
-    typealias Index = ArrayType.Index
-    typealias Element = ArrayType.Element
+    public typealias Index = ArrayType.Index
+    public typealias Element = ArrayType.Element
 
     // The upper and lower bounds of the collection, used in iterations
-    var startIndex: Index { return array.startIndex }
-    var endIndex: Index { return array.endIndex }
+    public var startIndex: Index { return array.startIndex }
+    public var endIndex: Index { return array.endIndex }
 
     // Required subscript, based on a dictionary index
-    subscript(index: Index) -> Iterator.Element {
+    public subscript(index: Index) -> Element {
         array[index]
     }
     
@@ -96,7 +94,7 @@ extension FirebaseDynamicRoot: Collection {
     }
 
     // Method that returns the next index when iterating
-    func index(after i: Index) -> Index {
+    public func index(after i: Index) -> Index {
         return array.index(after: i)
     }
 }

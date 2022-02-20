@@ -14,7 +14,7 @@ final class FirebaseParserTests: XCTestCase {
         let timestamp: Date
     }
 
-    struct Response: Codable {
+    struct Root: Codable {
         let chats: DynamicChildrenArray<Chat>
         let members: DynamicChildrenArray<DynamicChildrenArray<Bool>>
         let messages: DynamicChildrenArray<DynamicChildrenArray<Message>>
@@ -57,12 +57,12 @@ final class FirebaseParserTests: XCTestCase {
         let data = Data(newJson.utf8)
 
         // Define DecodedArray type using the angle brackets (<>)
-        let result = try JSONDecoder().decode(Response.self, from: data)
+        let result = try JSONDecoder().decode(Root.self, from: data)
 
-        XCTAssertEqual(result.members["one"]?.key, "one")
+        XCTAssertEqual(result.members["one"]?[0].value, true)
         XCTAssertEqual(result.members[0].key, "one")
         
-        XCTAssertEqual(result.members["one"]?.value["ghopper"]?.key, "ghopper")
+        XCTAssertEqual(result.members["one"]?["ghopper"], true)
         XCTAssertFalse(result.members[0].value[0].key.isEmpty)
     }
     
@@ -84,11 +84,11 @@ final class FirebaseParserTests: XCTestCase {
 
         let data = Data(newJson.utf8)
 
-        // Define DecodedArray type using the angle brackets (<>)
         let result = try JSONDecoder().decode(FirebaseDynamicRoot<Chat>.self, from: data)
 
-        XCTAssertEqual(result["one"]?.key, "one")
-        XCTAssertEqual(result["one"]?.value.title, "Historical Tech Pioneers")
+        XCTAssertEqual(result["one"]?.title, "Historical Tech Pioneers")
         XCTAssertFalse(result[0].key.isEmpty)
+        
+        print(result[0].value)
     }
 }
