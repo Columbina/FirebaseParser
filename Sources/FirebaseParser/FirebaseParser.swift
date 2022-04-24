@@ -29,8 +29,10 @@ public struct DynamicChildrenArray<T: Codable>: Codable {
         var tempArray = [KeyValue<T>]()
 
         for key in container.allKeys {
-            let decodedValue = try container
-                .decode(T.self, forKey: DynamicCodingKeys(stringValue: key.stringValue)!)
+            guard let decodedValue = try? container
+                .decode(T.self, forKey: DynamicCodingKeys(stringValue: key.stringValue)!) else {
+                continue
+            }
             
             let nodeItem = KeyValue(key: key.stringValue,value: decodedValue)
             tempArray.append(nodeItem)
